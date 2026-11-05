@@ -1,1 +1,5 @@
-import InferenceProof.Basic
+module
+
+public import InferenceProof.Syntax
+public import InferenceProof.OperationalSemantics
+public import InferenceProof.DenotationalSemantics
