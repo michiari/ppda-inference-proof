@@ -2,8 +2,9 @@
 
 Lean 4 definitions for *Exact Inference for Nested Discrete Probabilistic
 Programs*, whose sources are in `../paper`. Build with `lake build`; import
-`InferenceProof` to use the formalization. There are no theorem proofs or
-proof placeholders.
+`InferenceProof` to use the formalization. The pPDA polynomial termination
+semantics is proved equivalent to the operational termination probability for
+every source fragment and initial/final store. There are no proof placeholders.
 
 - `InferenceProof/Syntax.lean` defines finite variable, function, and value
   domains; expressions; all source statements; function definitions; and programs
@@ -20,6 +21,12 @@ proof placeholders.
   of Section 5 (`paper/5-denotational.tex`) in the namespace
   `InferenceProof.Denotational`: marginals, guard restriction, normalization,
   all statement clauses, and the joint semantics of recursive calls and queries.
+- `InferenceProof/PPDA/` defines finite rational pPDAs and their quadratic
+  termination system, constructs the finite program automaton, and proves
+  `PPDA.polynomialTermination_eq_operational` and
+  `PPDA.ppdaTermination_eq_operational`. Reachable controls and stack symbols are
+  proved finite; coincident rule instances retain their probability mass.
+  See [the pPDA results and source correspondence](InferenceProof/PPDA/README.md).
 
 Calls carry a target variable and function name. Their argument list is implicit:
 it is exactly the callee's `parameters` list, following the restriction in
@@ -80,7 +87,10 @@ is extended to zero, matching the absence of operational transitions.
 `Denotational.programSemantics` uses the ordinary-call entry and
 `Denotational.queryProgramSemantics` uses the query entry.
 
-No closure, linearity, continuity, fixed-point, normalization-equivalence, or
-operational/denotational equivalence proofs have been added. In particular, the
-Kleene suprema are definitions; their least-fixed-point properties remain to be
-proved. The explicit pPDA translation and bounded-call syntax are also not included.
+For the denotational semantics, closure, linearity, continuity, fixed-point,
+normalization-equivalence, and operational/denotational equivalence proofs remain
+to be supplied. Its Kleene suprema are definitions; their least-fixed-point
+properties remain to be proved. The separate pPDA development includes the finite
+source-program translation, fixed-point and path-sum proofs, and equivalence
+with the existing operational termination mass. Bounded-call syntax is not
+included.
