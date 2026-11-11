@@ -54,10 +54,6 @@ inductive Stmt (S : Signature) where
   | skip
   | seq (first rest : Stmt S)
 
-/-- The paper's abbreviation `observe(b)`. -/
-def Stmt.observeIf {S : Signature} (guard : Expr S) : Stmt S :=
-  .ite guard .skip .observe
-
 /-- A function body excludes its final, implicit `return out` statement. -/
 structure FunctionDef (S : Signature) where
   parameters : List (Var S)

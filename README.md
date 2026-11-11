@@ -9,8 +9,11 @@ proof placeholders.
   domains; expressions; all source statements; function definitions; and programs
   (Section 3, `paper/3-cprGCL.tex`). `Program.WellFormed` expresses that main is
   `f₀` and has no parameters.
-- `InferenceProof/OperationalSemantics.lean` defines stores, expression evaluation,
-  runtime code, configurations, and every rule in Figure `fig:op-semantics`
+- `InferenceProof/SemanticsCommon.lean` defines stores, error valuations,
+  expression interpretation and evaluation, and random-assignment probabilities.
+  Both semantics import this shared foundation independently.
+- `InferenceProof/OperationalSemantics.lean` defines runtime code, configurations,
+  and every rule in Figure `fig:op-semantics`
   (Section 4, `paper/4-operational.tex`). It also defines transition weights,
   positive-probability reachability, finite runs, and termination probabilities.
 - `InferenceProof/DenotationalSemantics.lean` defines the distribution transformers

@@ -1,5 +1,6 @@
 module
 
 public import InferenceProof.Syntax
+public import InferenceProof.SemanticsCommon
 public import InferenceProof.OperationalSemantics
 public import InferenceProof.DenotationalSemantics

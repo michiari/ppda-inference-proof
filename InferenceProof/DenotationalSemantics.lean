@@ -1,6 +1,7 @@
 module
 
-public import InferenceProof.OperationalSemantics
+public import InferenceProof.SemanticsCommon
+public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
 public import Mathlib.Logic.Function.Iterate
 
 set_option linter.style.header false
