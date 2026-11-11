@@ -15,9 +15,10 @@ the subdistribution and linearity predicates separately. This avoids requiring
 closure, continuity, or fixed-point proofs merely to state the semantics.
 
 Both fixed-point constructions are defined by the paper's pointwise suprema of
-finite iterates from zero. Their fixed-point and leastness properties, as well
-as preservation of subdistributions, remain to be proved. Recursive queries use
-the joint rejection-loop functional Ψ, not normalization at each finite iterate.
+finite iterates from zero. The files in `InferenceProof/Denotational/` prove
+closure, linearity, continuity, leastness, and equivalence of recursive query
+kernels with normalization. Recursive queries use the joint rejection-loop
+functional Ψ at finite iterates.
 -/
 
 @[expose] public section
@@ -191,7 +192,7 @@ def whileApproximation (E : ExprInterpretation S) (guard : Expr S)
   (whileFunctional E guard body)^[k] ⊥
 
 /-- The pointwise Kleene supremum defining the loop semantics.
-No fixed-point, leastness, or continuity theorem is asserted here.
+Its fixed-point, leastness, and closure theorems are in `Denotational.While`.
 -/
 def whileSemantics (E : ExprInterpretation S) (guard : Expr S)
     (body : Transformer S) : Transformer S :=
@@ -237,7 +238,8 @@ def recursionApproximation (E : ExprInterpretation S) (P : Program S)
   (recursionFunctional E P)^[k] ⊥
 
 /-- The pointwise Kleene supremum `(α*,β*)` defining recursive calls and queries.
-Its characterization as the least fixed point is reserved for the proof stage.
+`Denotational.FixedPoints` proves that this is a subprobability environment
+and the least fixed point of Ψ.
 -/
 def recursiveEnvironment (E : ExprInterpretation S) (P : Program S) : Environment S :=
   ⨆ k : ℕ, recursionApproximation E P k

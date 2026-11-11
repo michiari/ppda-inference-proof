@@ -1,0 +1,3 @@
+module
+
+public import InferenceProof.Denotational.QueryNormalization

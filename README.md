@@ -1,10 +1,12 @@
 # inference-proof
 
-Lean 4 definitions for *Exact Inference for Nested Discrete Probabilistic
+Lean 4 formalization of *Exact Inference for Nested Discrete Probabilistic
 Programs*, whose sources are in `../paper`. Build with `lake build`; import
 `InferenceProof` to use the formalization. The pPDA polynomial termination
 semantics is proved equivalent to the operational termination probability for
-every source fragment and initial/final store. There are no proof placeholders.
+every source fragment and initial/final store. The denotational well-definedness
+and least-fixed-point results of Section 5 and Appendix A are also proved.
+There are no proof placeholders.
 
 - `InferenceProof/Syntax.lean` defines finite variable, function, and value
   domains; expressions; all source statements; function definitions; and programs
@@ -21,6 +23,10 @@ every source fragment and initial/final store. There are no proof placeholders.
   of Section 5 (`paper/5-denotational.tex`) in the namespace
   `InferenceProof.Denotational`: marginals, guard restriction, normalization,
   all statement clauses, and the joint semantics of recursive calls and queries.
+- `InferenceProof/Denotational/` proves subdistribution closure, linearity,
+  increasing-chain continuity, existence and leastness of the while and joint
+  recursion fixed points, and equality of recursive query kernels with
+  normalization. See [the denotational proof map](InferenceProof/Denotational/README.md).
 - `InferenceProof/PPDA/` defines finite rational pPDAs and their quadratic
   termination system, constructs the finite program automaton, and proves
   `PPDA.polynomialTermination_eq_operational` and
@@ -87,10 +93,15 @@ is extended to zero, matching the absence of operational transitions.
 `Denotational.programSemantics` uses the ordinary-call entry and
 `Denotational.queryProgramSemantics` uses the query entry.
 
-For the denotational semantics, closure, linearity, continuity, fixed-point,
-normalization-equivalence, and operational/denotational equivalence proofs remain
-to be supplied. Its Kleene suprema are definitions; their least-fixed-point
-properties remain to be proved. The separate pPDA development includes the finite
-source-program translation, fixed-point and path-sum proofs, and equivalence
-with the existing operational termination mass. Bounded-call syntax is not
-included.
+The well-definedness proofs follow Section 5 and the denotational section of
+`paper/appendix.tex`: subdistributions and linear operators are omega-cpos,
+increasing limits commute with the required sums and products, the auxiliary
+semantics is continuous in the recursive environment, and both fixed points
+are least and preserve subdistributions. `semantics_linOp` gives closure and
+linearity for every statement. `sampleQuerySemantics_eq_normalize` proves the
+normalization characterization, including zero for certain rejection.
+The proofs also cover the existing extension of invalid probability rows by zero.
+
+Operational/denotational equivalence and bounded-call syntax are separate work
+and are not included. The pPDA development proves equivalence of its polynomial
+system with the existing operational termination mass.
