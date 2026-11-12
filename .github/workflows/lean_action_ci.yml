@@ -16,9 +16,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v7
-      - uses: leanprover/lean-action@v1
+      - uses: actions/checkout@v7.0.1
+      - uses: leanprover/lean-action@v1.6.2
+      - name: Add swap for documentation generation
+        if: github.event_name == 'push'
+        run: |
+          sudo fallocate -l 4G /mnt/docgen.swap
+          sudo chmod 600 /mnt/docgen.swap
+          sudo mkswap /mnt/docgen.swap
+          sudo swapon /mnt/docgen.swap
+          free -h
       - uses: leanprover-community/docgen-action@v1
         env:
           # Limit concurrent documentation tasks to fit the runner's memory.
-          LEAN_NUM_THREADS: '2'
+          LEAN_NUM_THREADS: '1'
