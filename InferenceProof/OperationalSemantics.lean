@@ -179,7 +179,8 @@ inductive Run (E : ExprInterpretation S) (P : Program S) :
       Run E P source (p * q) target
 
 /-- Total mass of finite terminating runs with the given final store.
-Infinite runs contribute no mass. Normalization and equivalence are not proved here.
+Infinite runs contribute no mass. `Equivalence.Main` proves equality with the
+denotational semantics and the resulting subdistribution bound.
 -/
 noncomputable def terminationProbability (E : ExprInterpretation S) (P : Program S)
     (source : Configuration S) (σ : Valuation S) : ℝ≥0∞ :=

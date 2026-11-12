@@ -88,8 +88,8 @@ There are two deliberate representation choices relative to the paper:
 
 The polynomial operator lives in the complete lattice of nonnegative
 extended-real vectors, with exact rational coefficients and finite sums.
-Equivalence with the operational mass function is proved; a separate bound of
-the total mass by one is not part of this development. Empty-stack absorbing
+Equivalence with the operational mass function is proved. Empty-stack absorbing
 self-loops are omitted from finite paths so each terminating first-hit path is
-counted once. Operational/denotational equivalence is a separate theorem and is
-not claimed here.
+counted once. The [equivalence development](../Equivalence/README.md) additionally
+proves operational/denotational equivalence, equality with this polynomial
+system, and the bound on total termination mass by one.

@@ -87,4 +87,5 @@ Representation details relative to the paper:
   they apply directly to the stated semantics.
 
 There are no placeholders or custom axioms. No semantic definition was changed
-for these proofs. Operational/denotational equivalence is a separate result.
+for these proofs. Operational/denotational equivalence is proved in the
+[separate equivalence development](../Equivalence/README.md).

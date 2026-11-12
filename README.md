@@ -5,7 +5,8 @@ Programs*, whose sources are in `../paper`. Build with `lake build`; import
 `InferenceProof` to use the formalization. The pPDA polynomial termination
 semantics is proved equivalent to the operational termination probability for
 every source fragment and initial/final store. The denotational well-definedness
-and least-fixed-point results of Section 5 and Appendix A are also proved.
+and least-fixed-point results of Section 5 and Appendix A are proved, as is
+Section 6's equivalence of denotational and operational semantics.
 There are no proof placeholders.
 
 - `InferenceProof/Syntax.lean` defines finite variable, function, and value
@@ -34,6 +35,13 @@ There are no proof placeholders.
   proved finite; coincident rule instances retain their probability mass.
   See [the pPDA results and source correspondence](InferenceProof/PPDA/README.md).
 
+- `InferenceProof/Equivalence/` proves
+  `Equivalence.denotational_eq_operational` for every fragment and initial store,
+  including recursive calls and nested queries. It also proves equivalence
+  with the polynomial system, operational subdistribution bounds, composition
+  laws, and the bounded-loop supremum results.
+  See [the equivalence proof map](InferenceProof/Equivalence/README.md).
+
 Calls carry a target variable and function name. Their argument list is implicit:
 it is exactly the callee's `parameters` list, following the restriction in
 Section 3 and the explanation in Section 5. The final `return out` is supplied
@@ -61,8 +69,8 @@ and only `term` and `err` remove the bottom marker.
 In particular, when both branches of a random assignment coincide, even with
 equal probabilities, both contribute to `transitionWeight` and
 `terminationProbability`. Labels are exact rationals; sums take values in
-Mathlib's extended nonnegative reals. These are mass functions: bounds by one
-and the subdistribution laws remain to be proved. Divergent runs contribute no
+Mathlib's extended nonnegative reals. `Equivalence.operational_isSubdistribution`
+proves that each fragment's total termination mass is at most one. Divergent runs contribute no
 termination mass, and an always-rejected query keeps retrying.
 
 `initialProgram` and `programSemantics` follow Section 4.2's ordinary call to
@@ -102,6 +110,9 @@ linearity for every statement. `sampleQuerySemantics_eq_normalize` proves the
 normalization characterization, including zero for certain rejection.
 The proofs also cover the existing extension of invalid probability rows by zero.
 
-Operational/denotational equivalence and bounded-call syntax are separate work
-and are not included. The pPDA development proves equivalence of its polynomial
-system with the existing operational termination mass.
+The equivalence proof follows structural induction and the paper's finite loop
+and simultaneous recursion approximants. Explicit continuation lemmas account
+for saved stores, returns, and query rejection. The proof map explains the
+replacement of informal run diagrams by first-step equations and leastness,
+and a correction to the appendix's zero bounded-loop case on error input.
+The original syntax and semantic definitions are unchanged.

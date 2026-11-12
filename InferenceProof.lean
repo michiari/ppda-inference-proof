@@ -6,3 +6,4 @@ public import InferenceProof.OperationalSemantics
 public import InferenceProof.DenotationalSemantics
 public import InferenceProof.Denotational
 public import InferenceProof.PPDA
+public import InferenceProof.Equivalence
