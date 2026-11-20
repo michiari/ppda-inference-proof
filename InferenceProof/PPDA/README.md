@@ -26,10 +26,11 @@ the result to the whole-program entry convention of Section 4.2.
 These theorems require no additional finiteness, simulation, normalization, or
 path-aggregation hypotheses. There are no proof placeholders or custom axioms.
 
-The mathematical sources are `paper/2-background.tex`, subsection "Termination
-Probabilities", and the program semantics of `paper/4-operational.tex`, Section
-4.2. The first-return argument follows `bibliography/esparza/lmcs2004.tex`, Theorem
-`thm-least-fix` and the preceding decomposition of paths after pushing two symbols.
+The mathematical sources are Section 2.1 (Termination Probabilities) and
+Section 4.2, Definition 4.2 (pPDA Operational Semantics of a Program Fragment).
+The first-return argument follows Section 3, Theorem 3.5 of Esparza, Kučera, and
+Mayr, *Model Checking Probabilistic Pushdown Automata* (journal version), and
+its preceding decomposition of paths after pushing two symbols.
 
 The generic polynomial and path-sum development consists of:
 

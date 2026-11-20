@@ -1,8 +1,8 @@
 # Well-definedness of the denotational semantics
 
-This directory proves the results in `paper/5-denotational.tex` and the first
-section of `paper/appendix.tex`, ending before the operational/denotational
-equivalence appendix. Import `InferenceProof.Denotational` or `InferenceProof`.
+This directory proves the well-definedness results in Sections 5 and 13 of
+the paper (Denotational Semantics and its appendix). Import
+`InferenceProof.Denotational` or `InferenceProof`.
 The semantic definitions are in `DenotationalSemantics.lean`.
 All declarations below are in `InferenceProof.Denotational`.
 
@@ -24,23 +24,23 @@ The proofs follow the paper's arguments: increasing suprema commute with
 nonnegative sums and products; the semantic domains are omega-cpos; linearity
 and environment continuity follow by structural induction; loops use finite
 Phi iterates; and Kleene iteration constructs the simultaneous recursion fixed
-point. The final query-normalization proof uses the appendix's pre-fixed pair
+point. The final query-normalization proof uses the pre-fixed pair in Section 13.1
 `(alpha-star, normalize alpha-star)` and leastness of Psi.
 
 | Paper result | Lean declaration or instance |
 | --- | --- |
-| Delta expansion of a distribution | `bind_dirac_right` in `Mass.lean` |
-| Appendix `lem:comp-cpo` | Mathlib's function and product omega-cpo instances; subdistribution, LinOp, and subprobability-environment instances in `Order.lean`, `Linear.lean`, and `Auxiliary.lean` |
-| Appendix `lem:op-seq` | `ENNReal.iSup_add_iSup_of_monotone`, `iSup_mul_of_monotone`, and `tsum_iSup_of_monotone` |
-| Appendix `lem:double-index` | `chainSup_diagonal` and `chainSup_comm`, on an arbitrary omega-cpo; `iSup_diagonal` is the complete-lattice form used in semantic continuity |
-| Section 5 `thm:kleene` | `kleene_theorem`, on an arbitrary omega-cpo with bottom; `kleene_fixedPoint` and `kleene_le` give the ambient-lattice form |
-| Appendix `lem:lfp-while-lemma` | `whileFunctional_preserves`, `whileFunctional_isLinear`, `whileOperator_omegaContinuous`, `whileSemantics_linOp`, and `whileFixedPoint_isLeast` in `While.lean` |
-| Appendix `lem:sem-linear` | `auxiliarySemantics_massLinear`, `auxiliarySemantics_linOp`, and `semantics_linOp` |
-| Section 5 `thm:fixed-point-while` | `semantics_while_isLeast`, with `whileSemantics_fixedPoint` and the definition `whileSemantics` |
-| Section 5 / Appendix `lem:psem-cont` | `auxiliarySemantics_omegaContinuous` and `auxiliarySemantics_iSup` in `Continuity.lean` |
-| Section 5 `thm:fixed-point-rec` | `recursionFunctional_preserves`, `recursionOperator_omegaContinuous`, `recursiveEnvironment_subprobability`, `recursiveEnvironment_fixedPoint`, and `recursionFixedPoint_isLeast` in `FixedPoints.lean` |
-| Section 5 `eq:N-fix-point` | `normalize_fixedPoint`, `rejection_fixedPoint_unique`, and `normalize_isLeast` in `Rejection.lean` |
-| Section 5 / Appendix `prop:sq-normalization` | `sampleQuerySemantics_eq_normalize` in `QueryNormalization.lean` |
+| Section 5.1: delta expansion of a distribution | `bind_dirac_right` in `Mass.lean` |
+| Lemma 13.1 | Mathlib's function and product omega-cpo instances; subdistribution, LinOp, and subprobability-environment instances in `Order.lean`, `Linear.lean`, and `Auxiliary.lean` |
+| Lemma 13.2 | `ENNReal.iSup_add_iSup_of_monotone`, `iSup_mul_of_monotone`, and `tsum_iSup_of_monotone` |
+| Lemma 13.3 | `chainSup_diagonal` and `chainSup_comm`, on an arbitrary omega-cpo; `iSup_diagonal` is the complete-lattice form used in semantic continuity |
+| Theorem 5.2 (Kleene’s fixed-point theorem) | `kleene_theorem`, on an arbitrary omega-cpo with bottom; `kleene_fixedPoint` and `kleene_le` give the ambient-lattice form |
+| Lemma 13.4 | `whileFunctional_preserves`, `whileFunctional_isLinear`, `whileOperator_omegaContinuous`, `whileSemantics_linOp`, and `whileFixedPoint_isLeast` in `While.lean` |
+| Lemma 13.5 | `auxiliarySemantics_massLinear`, `auxiliarySemantics_linOp`, and `semantics_linOp` |
+| Theorems 5.3 and 13.6 (loop fixed point) | `semantics_while_isLeast`, with `whileSemantics_fixedPoint` and the definition `whileSemantics` |
+| Lemma 5.5 (Section 5.2; proof in Section 13.1) | `auxiliarySemantics_omegaContinuous` and `auxiliarySemantics_iSup` in `Continuity.lean` |
+| Theorem 5.4 (simultaneous recursion fixed point) | `recursionFunctional_preserves`, `recursionOperator_omegaContinuous`, `recursiveEnvironment_subprobability`, `recursiveEnvironment_fixedPoint`, and `recursionFixedPoint_isLeast` in `FixedPoints.lean` |
+| Equation (6), Section 5.1 (rejection fixed point) | `normalize_fixedPoint`, `rejection_fixedPoint_unique`, and `normalize_isLeast` in `Rejection.lean` |
+| Proposition 5.6 (Section 5.2; proof in Section 13.1) | `sampleQuerySemantics_eq_normalize` in `QueryNormalization.lean` |
 
 The files are arranged by dependency:
 
@@ -56,7 +56,7 @@ The files are arranged by dependency:
    using diagonal suprema for sequencing and finite loop iterates.
 8. `FixedPoints.lean`: Psi and the well-defined full semantics.
 9. `Rejection.lean`: normalization as the least affine rejection solution.
-10. `QueryNormalization.lean`: the appendix's recursive normalization argument.
+10. `QueryNormalization.lean`: the proof of Proposition 5.6 in Section 13.1.
 
 Function kernels evaluate bodies on `dirac (F.init σ)`, implementing the
 embedding `φ_i`. Callee initialization retains the values of parameter variables,
