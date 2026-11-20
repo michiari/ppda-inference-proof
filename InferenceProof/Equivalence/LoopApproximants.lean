@@ -7,9 +7,7 @@ set_option linter.style.header false
 /-! # Finite loop approximants
 
 The appendix's induction on the number of loop unfoldings, written directly
-for Phi iterates. The zero iterate is zero even on error; every positive
-iterate preserves error. This distinguishes the zero operator from the source
-statement `diverge`, whose error input terminates immediately.
+for Phi iterates, including the error behavior of zero and positive iterates.
 -/
 
 @[expose] public section

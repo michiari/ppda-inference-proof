@@ -79,22 +79,24 @@ theorem operational_ite (b : Expr S) (t f : Stmt S) (σ : Store S) :
     (dirac (.normal σ)) o = _
   simpa only [ite_apply, Denotational.fragmentSemantics, semantics] using h
 
-/-- Section 6, equation `eq:op-func`, including aggregation of coincident updates. -/
+/-- Section 6, equation `eq:op-func`, with initialized callee store. -/
 theorem operational_call (x : Var S) (f : FunctionName S) (σ : Store S) :
     InferenceProof.fragmentSemantics E P (.call x f) (.normal σ) =
       Denotational.bind (marginal (P.functions f).out
-        (InferenceProof.fragmentSemantics E P (P.functions f).body (.normal σ)))
+        (InferenceProof.fragmentSemantics E P (P.functions f).body
+          ((P.functions f).init (.normal σ))))
         (fun outcome => match outcome with
           | some v => dirac (.normal (σ.update x v))
           | none => dirac .error) := by
   rw [← denotational_eq_operational E P (.call x f) (.normal σ),
-    ← denotational_eq_operational E P (P.functions f).body (.normal σ)]
+    ← denotational_eq_operational E P (P.functions f).body ((P.functions f).init (.normal σ))]
   change functionAssign x ((recursiveEnvironment E P).1 f) (dirac (.normal σ)) = _
   rw [functionAssign, bind_dirac]
   dsimp only
   have ha : (recursiveEnvironment E P).1 f (.normal σ) =
       marginal (P.functions f).out
-        (Denotational.fragmentSemantics E P (P.functions f).body (.normal σ)) :=
+        (Denotational.fragmentSemantics E P (P.functions f).body
+          ((P.functions f).init (.normal σ))) :=
     (congrFun (congrFun (congrArg Prod.fst
       (recursiveEnvironment_fixedPoint E P)) f) (.normal σ)).symm
   rw [ha]
@@ -102,8 +104,8 @@ theorem operational_call (x : Var S) (f : FunctionName S) (σ : Store S) :
 
 theorem functionSemantics_eq_marginal_operational (f : FunctionName S) (σ : Valuation S) :
     functionSemantics E P f σ = marginal (P.functions f).out
-      (InferenceProof.fragmentSemantics E P (P.functions f).body σ) := by
-  rw [← denotational_eq_operational E P (P.functions f).body σ]
+      (InferenceProof.fragmentSemantics E P (P.functions f).body ((P.functions f).init σ)) := by
+  rw [← denotational_eq_operational E P (P.functions f).body ((P.functions f).init σ)]
   exact (congrFun (congrFun (congrArg Prod.fst
     (recursiveEnvironment_fixedPoint E P)) f) σ).symm
 
@@ -144,11 +146,12 @@ theorem operational_sampleQuery_eq_normalize (x : Var S) (f : FunctionName S)
     (σ : Store S) :
     InferenceProof.fragmentSemantics E P (.sampleQuery x f) (.normal σ) =
       sampleQueryAssign x (fun τ => normalize (marginal (P.functions f).out
-        (InferenceProof.fragmentSemantics E P (P.functions f).body τ))) (dirac (.normal σ)) := by
+        (InferenceProof.fragmentSemantics E P (P.functions f).body ((P.functions f).init τ))))
+        (dirac (.normal σ)) := by
   rw [← denotational_eq_operational E P (.sampleQuery x f) (.normal σ)]
   change sampleQueryAssign x (sampleQuerySemantics E P f) (dirac (.normal σ)) = _
   have h : sampleQuerySemantics E P f = fun τ => normalize (marginal (P.functions f).out
-      (InferenceProof.fragmentSemantics E P (P.functions f).body τ)) := by
+      (InferenceProof.fragmentSemantics E P (P.functions f).body ((P.functions f).init τ))) := by
     funext τ
     rw [sampleQuerySemantics_eq_normalize, functionSemantics_eq_marginal_operational]
   rw [h]

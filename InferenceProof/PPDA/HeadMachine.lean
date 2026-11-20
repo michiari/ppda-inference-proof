@@ -11,8 +11,8 @@ set_option linter.style.header false
 # The program's head transition table
 
 At a compiled location the current control, store, top stack symbol and a single
-Boolean branch choice determine the transition. The Boolean distinguishes the
-two random-assignment rules even when they have the same probability and result.
+Boolean branch choice determine the transition. The Boolean selects the two
+distinct random outcomes; equal outcomes use the deterministic false branch.
 -/
 
 @[expose] public section
@@ -61,7 +61,9 @@ noncomputable def headMove (E : ExprInterpretation S) (P : Program S)
           | .assign x e => single branch ⟨1, (k, .normal (σ.update x (e.eval E σ))), .one X⟩
           | .randomAssign x a n d b =>
               if ValidProbability E σ n d then
-                if branch then
+                if a.eval E σ = b.eval E σ then
+                  single branch ⟨1, (k, .normal (σ.update x (a.eval E σ))), .one X⟩
+                else if branch then
                   some ⟨1 - branchProbability E σ n d,
                     (k, .normal (σ.update x (b.eval E σ))), .one X⟩
                 else some ⟨branchProbability E σ n d,
@@ -75,7 +77,8 @@ noncomputable def headMove (E : ExprInterpretation S) (P : Program S)
               else single branch
                 ⟨1, (compile body (.seq (.stmt (.while b body)) k), .normal σ), .one X⟩
           | .call x f => single branch
-              ⟨1, (compile (P.functions f).body (.ret (P.functions f).out), .normal σ),
+              ⟨1, (compile (P.functions f).body (.ret (P.functions f).out),
+                (P.functions f).init (.normal σ)),
                 .two (.function k x σ) X⟩
           | .sampleQuery x f => single branch
               ⟨1, (.seq (.stmt (.call x f)) .endQuery, .normal σ), .two (.query x f k σ) X⟩
@@ -102,7 +105,7 @@ theorem ofStmt_ne_done (C : Stmt S) : Code.ofStmt C ≠ .done := by
 def stepBranch {E : ExprInterpretation S} {P : Program S}
     {source target : InferenceProof.Configuration S} {p : ℚ} :
     Step E P source p target → Bool
-  | .rndAssignRight _ => true
+  | .rndAssignRight _ _ => true
   | .seqCont step _ _ => stepBranch step
   | .seqEnd step => stepBranch step
   | _ => false
@@ -179,10 +182,15 @@ noncomputable def headMove_witness (E : ExprInterpretation S) (P : Program S)
           exact ⟨.seqEnd .detAssign, rfl⟩
         | randomAssign x a n d b =>
           by_cases hv : ValidProbability E σ n d
-          · cases branch <;> simp only [headMove, hv, ite_true, Bool.false_eq_true,
-              ite_false, ite_true, Option.some.injEq] at h
-            · cases h; exact ⟨.seqEnd (.rndAssignLeft hv), rfl⟩
-            · cases h; exact ⟨.seqEnd (.rndAssignRight hv), rfl⟩
+          · by_cases he : a.eval E σ = b.eval E σ
+            · simp only [headMove, ite_eq_left hv, ite_eq_left he] at h
+              rcases single_eq_some.mp h with ⟨rfl, rfl⟩
+              refine ⟨.seqEnd (.rndAssignEq hv he), ?_⟩
+              rfl
+            · cases branch <;> simp only [headMove, hv, he, ite_true, ite_false,
+                Bool.false_eq_true, Option.some.injEq] at h
+              · cases h; exact ⟨.seqEnd (.rndAssignLeft hv he), rfl⟩
+              · cases h; exact ⟨.seqEnd (.rndAssignRight hv he), rfl⟩
           · simp only [headMove, hv, ite_false, reduceCtorEq] at h
         | ite b t e =>
           by_cases hg : (b.eval E σ).val = 0

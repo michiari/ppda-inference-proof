@@ -5,11 +5,11 @@ public import InferenceProof.PPDA.Paths
 set_option linter.style.header false
 
 /-!
-# Aggregating coincident transitions
+# Rule-labelled pushdown paths
 
-An edge may have several rule instances, even when its endpoints and stack
-effect coincide. Summing those instances before multiplying along paths gives
-the same total mass as retaining each instance in the path.
+Summing the labels of enabled rules gives the transition coefficients.
+The path correspondence preserves total mass when passing between rule labels
+and those coefficients.
 -/
 
 @[expose] public section

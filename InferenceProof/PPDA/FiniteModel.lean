@@ -144,9 +144,13 @@ theorem headMove_closed (E : ExprInterpretation S) (P : Program S) (C : Stmt S)
           exact ⟨hl, by simpa [Replacement.word] using hx⟩
         | randomAssign x a n d b =>
           by_cases hv : ValidProbability E σ n d
-          · cases branch <;> simp only [headMove, hv, ite_true, ite_false,
-              Bool.false_eq_true, Option.some.injEq] at hm
-            all_goals cases hm; exact ⟨hl, by simpa [Replacement.word] using hx⟩
+          · by_cases he : a.eval E σ = b.eval E σ
+            · simp only [headMove, hv, he, ite_true] at hm
+              rcases single_eq_some.mp hm with ⟨rfl, rfl⟩
+              exact ⟨hl, by simpa [Replacement.word] using hx⟩
+            · cases branch <;> simp only [headMove, hv, he, ite_true, ite_false,
+                Bool.false_eq_true, Option.some.injEq] at hm
+              all_goals cases hm; exact ⟨hl, by simpa [Replacement.word] using hx⟩
           · simp only [headMove, hv, ite_false, reduceCtorEq] at hm
         | ite b t e =>
           by_cases hg : (b.eval E σ).val = 0

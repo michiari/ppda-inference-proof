@@ -10,15 +10,14 @@ set_option linter.style.header false
 # Operational semantics of cpGCL
 
 The rules below follow Section 4, Figure `fig:op-semantics` in
-`paper/4-operational.tex`. `Step` retains rule derivations as data so that
-different random branches leading to the same configuration are counted
-separately. Transition weights and termination probabilities sum these weights.
+`paper/4-operational.tex`. `Step` retains rule derivations as data for the
+labelled-path proofs. Distinct random outcomes have Bernoulli weights; equal
+outcomes use `rndAssignEq` with probability one.
 
 The runtime code includes the paper's auxiliary `↓`, `return`, and `endquery`.
 `Code.append` implements the paper's right-associative sequencing convention.
-Calls start from the current store; return restores the caller's saved store
-and updates only the target variable. No additional parameter copying or
-local-variable initialization is inserted into the paper's call rule.
+Calls retain parameter values and initialize all other callee variables to zero.
+Return restores the caller's saved store and updates only the target variable.
 -/
 
 @[expose] public section
@@ -73,8 +72,8 @@ variable {S : Signature}
 /-- A single probability-labelled rule derivation `⟨C,σ,G⟩ ⊢_p ⟨C',σ',G'⟩`.
 
 Ordinary rules require normal stores and nonempty stacks. Only `term` and `err`
-empty the stack. The family lives in `Type`, rather than `Prop`, to distinguish
-the two random-assignment derivations even if their weights and endpoints agree.
+empty the stack. The family lives in `Type`, rather than `Prop`, to retain the
+labelled rule instances used in the path correspondence.
 -/
 inductive Step (E : ExprInterpretation S) (P : Program S) :
     Configuration S → ℚ → Configuration S → Type where
@@ -86,15 +85,21 @@ inductive Step (E : ExprInterpretation S) (P : Program S) :
       Step E P ⟨.stmt (.assign x e), .normal σ, γ :: G⟩ 1
         ⟨.done, .normal (σ.update x (e.eval E σ)), γ :: G⟩
   | rndAssignLeft {σ γ G x e₁ e₂ e₃ e₄}
-      (valid : ValidProbability E σ e₂ e₃) :
+      (valid : ValidProbability E σ e₂ e₃)
+      (distinct : e₁.eval E σ ≠ e₄.eval E σ) :
       Step E P ⟨.stmt (.randomAssign x e₁ e₂ e₃ e₄), .normal σ, γ :: G⟩
         (branchProbability E σ e₂ e₃)
         ⟨.done, .normal (σ.update x (e₁.eval E σ)), γ :: G⟩
   | rndAssignRight {σ γ G x e₁ e₂ e₃ e₄}
-      (valid : ValidProbability E σ e₂ e₃) :
+      (valid : ValidProbability E σ e₂ e₃)
+      (distinct : e₁.eval E σ ≠ e₄.eval E σ) :
       Step E P ⟨.stmt (.randomAssign x e₁ e₂ e₃ e₄), .normal σ, γ :: G⟩
         (1 - branchProbability E σ e₂ e₃)
         ⟨.done, .normal (σ.update x (e₄.eval E σ)), γ :: G⟩
+  | rndAssignEq {σ γ G x e₁ e₂ e₃ e₄}
+      (valid : ValidProbability E σ e₂ e₃) (equal : e₁.eval E σ = e₄.eval E σ) :
+      Step E P ⟨.stmt (.randomAssign x e₁ e₂ e₃ e₄), .normal σ, γ :: G⟩ 1
+        ⟨.done, .normal (σ.update x (e₁.eval E σ)), γ :: G⟩
   | ifThen {σ γ G b C₁ C₂} (guard : (b.eval E σ).val ≠ 0) :
       Step E P ⟨.stmt (.ite b C₁ C₂), .normal σ, γ :: G⟩ 1
         ⟨Code.ofStmt C₁, .normal σ, γ :: G⟩
@@ -118,7 +123,7 @@ inductive Step (E : ExprInterpretation S) (P : Program S) :
   | seqCall {σ γ G x f C} :
       Step E P ⟨.seq (.stmt (.call x f)) C, .normal σ, γ :: G⟩ 1
         ⟨(Code.ofStmt (P.functions f).body).append (.ret (P.functions f).out),
-          .normal σ, .function C x σ :: γ :: G⟩
+          (P.functions f).init (.normal σ), .function C x σ :: γ :: G⟩
   | returnValue {σ σ' γ G C x out} :
       Step E P ⟨.ret out, .normal σ, .function C x σ' :: γ :: G⟩ 1
         ⟨C, .normal (σ'.update x (σ out)), γ :: G⟩
@@ -139,7 +144,7 @@ inductive Step (E : ExprInterpretation S) (P : Program S) :
   | err {C} :
       Step E P ⟨C, .error, [.bottom]⟩ 1 ⟨.done, .error, []⟩
 
-/-- Aggregate all rule instances with the same source and target, as in the paper. -/
+/-- Transition probability obtained by summing enabled rule instances. -/
 noncomputable def transitionWeight (E : ExprInterpretation S) (P : Program S)
     (source target : Configuration S) : ℝ≥0∞ :=
   ∑' derivation : (Σ p : ℚ, Step E P source p target),
@@ -170,7 +175,7 @@ def initialProgram (P : Program S) : Configuration S :=
 def initialQuery (P : Program S) : Configuration S :=
   initialFragment (.sampleQuery P.dummy P.main) (.normal Store.zero)
 
-/-- Finite runs retain branch multiplicity and multiply the transition labels. -/
+/-- Finite runs record rule instances and multiply their transition labels. -/
 inductive Run (E : ExprInterpretation S) (P : Program S) :
     Configuration S → ℚ → Configuration S → Type where
   | refl (c : Configuration S) : Run E P c 1 c

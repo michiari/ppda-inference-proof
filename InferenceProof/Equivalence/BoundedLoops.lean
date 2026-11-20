@@ -6,11 +6,9 @@ set_option linter.style.header false
 
 /-! # The appendix's bounded-loop source statements
 
-`diverge` is `while(true){skip}`. Its error input propagates, so its denotation
-is `errorPart`, rather than the zero transformer. Consequently the source
-unrollings are Phi iterates from `errorPart`; their supremum is still the
-least fixed point. The paper's zero-seed argument is recovered by sandwiching
-these iterates between successive zero-seed iterates.
+The source unrollings are Phi iterates from `errorPart`, the denotation of
+`diverge`. As in the appendix, they lie between successive zero-seed iterates
+and have the same supremum.
 -/
 
 @[expose] public section

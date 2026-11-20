@@ -3,7 +3,7 @@
 This directory proves the results in `paper/5-denotational.tex` and the first
 section of `paper/appendix.tex`, ending before the operational/denotational
 equivalence appendix. Import `InferenceProof.Denotational` or `InferenceProof`.
-The original semantic definitions remain in `DenotationalSemantics.lean`.
+The semantic definitions are in `DenotationalSemantics.lean`.
 All declarations below are in `InferenceProof.Denotational`.
 
 The main results are:
@@ -58,6 +58,11 @@ The files are arranged by dependency:
 9. `Rejection.lean`: normalization as the least affine rejection solution.
 10. `QueryNormalization.lean`: the appendix's recursive normalization argument.
 
+Function kernels evaluate bodies on `dirac (F.init σ)`, implementing the
+embedding `φ_i`. Callee initialization retains the values of parameter variables,
+zeros other variables, and preserves error. `functionFromBody_omegaContinuous`
+and `recursionFunctional_preserves` include this initialization.
+
 Representation details relative to the paper:
 
 - The existing definitions use ambient functions into nonnegative extended reals.
@@ -68,7 +73,7 @@ Representation details relative to the paper:
   `sampleQuerySemantics_isSubdistribution` expose these bounds to callers.
 - `MassLinear` is delta expansion on every ambient mass function, a stronger
   property proved for constructed statement transformers. `IsLinear` remains
-  the original paper-facing property on subdistribution inputs. The existing
+  the paper-facing property on subdistribution inputs. The
   LinOp representation retains an ambient extension; in addition to ambient
   leastness, `whileSemantics_le_on_subdistributions` proves leastness against
   candidates whose pre-fixed inequality is required only on the paper's domain.
@@ -81,11 +86,10 @@ Representation details relative to the paper:
   proved to have total mass at most one. Affine uniqueness is asserted for
   subdistribution solutions, as in the paper, since infinite-valued ambient
   solutions need not be unique.
-- The original semantics extends invalid random-assignment rows by zero.
+- The semantics extends invalid random-assignment rows by zero.
   The closure and fixed-point proofs cover that extension too, so they need
   no extra validity hypotheses. On the paper's probability-validity domain
   they apply directly to the stated semantics.
 
-There are no placeholders or custom axioms. No semantic definition was changed
-for these proofs. Operational/denotational equivalence is proved in the
-[separate equivalence development](../Equivalence/README.md).
+There are no placeholders or custom axioms. Operational/denotational equivalence
+is proved in the [equivalence development](../Equivalence/README.md).

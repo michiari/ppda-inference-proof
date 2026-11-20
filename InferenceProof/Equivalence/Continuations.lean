@@ -119,7 +119,8 @@ theorem runtimeDenotation_return (G : List (StackSymbol S)) (k : Code S)
 theorem runtimeDenotation_call (G : List (StackSymbol S))
     (k : Code S) (x : Var S) (f : FunctionName S) (σ : Store S) :
     runtimeDenotation E P o (.function k x σ :: G)
-      (compile (P.functions f).body (.ret (P.functions f).out)) (.normal σ) =
+      (compile (P.functions f).body (.ret (P.functions f).out))
+        ((P.functions f).init (.normal σ)) =
       sourceWP E (recursiveEnvironment E P) (.call x f)
         (runtimeDenotation E P o G k) (.normal σ) := by
   rw [runtimeDenotation_compile E P o _ (List.cons_ne_nil _ _), sourceWP_call_fixedPoint]

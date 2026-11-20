@@ -48,10 +48,14 @@ theorem denotation_atom_step (X : StackSymbol S) (G : List (StackSymbol S))
     simp only [headMove, sum_single, moveTarget, Replacement.word, List.cons_append,
       List.nil_append, Rat.cast_one, ENNReal.ofReal_one, one_mul, sourceWP_observe, le_refl]
   | randomAssign x a n d b =>
-    rw [sourceWP_randomAssign]
-    by_cases h : ValidProbability E σ n d
-    · simp [headMove, h, moveTarget, Replacement.word, add_comm]
-    · simp [headMove, h]
+    by_cases hv : ValidProbability E σ n d
+    · by_cases he : a.eval E σ = b.eval E σ
+      · rw [sourceWP_randomAssign_eq E _ x a n d b _ σ hv he]
+        simp [headMove, single, hv, he, moveTarget, Replacement.word]
+      · rw [sourceWP_randomAssign]
+        simp [headMove, hv, he, moveTarget, Replacement.word, add_comm]
+    · rw [sourceWP_randomAssign]
+      simp [headMove, hv]
   | ite b t f =>
     rw [sourceWP_ite]
     by_cases h : (b.eval E σ).val = 0 <;>

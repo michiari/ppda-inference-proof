@@ -24,8 +24,8 @@ variable {S : Signature} {E : ExprInterpretation S} {P : Program S}
 theorem Step.probability_nonnegative {source target : Configuration S} {p : ℚ}
     (step : Step E P source p target) : 0 ≤ p := by
   induction step with
-  | rndAssignLeft h => exact h.2.1
-  | rndAssignRight h => exact sub_nonneg.mpr h.2.2
+  | rndAssignLeft h _ => exact h.2.1
+  | rndAssignRight h _ => exact sub_nonneg.mpr h.2.2
   | seqCont _ _ _ ih => exact ih
   | seqEnd _ ih => exact ih
   | _ => exact zero_le_one

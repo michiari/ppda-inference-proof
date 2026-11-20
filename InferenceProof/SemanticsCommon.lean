@@ -30,6 +30,26 @@ inductive Valuation (S : Signature) where
   | normal (store : Store S)
   | error
 
+/-- Initialize a callee's store, retaining its parameters and zeroing other variables. -/
+def Store.init {S : Signature} (parameters : List (Var S)) (σ : Store S) : Store S :=
+  fun x => if x ∈ parameters then σ x else 0
+
+@[simp] theorem Store.init_of_mem {S : Signature} (parameters : List (Var S))
+    (σ : Store S) (x : Var S) (h : x ∈ parameters) : σ.init parameters x = σ x := by
+  simp only [Store.init, h, ite_true]
+
+@[simp] theorem Store.init_of_not_mem {S : Signature} (parameters : List (Var S))
+    (σ : Store S) (x : Var S) (h : x ∉ parameters) : σ.init parameters x = 0 := by
+  simp only [Store.init, h, ite_false]
+
+/-- The paper's `init_i`, extended to preserve the error valuation. -/
+def FunctionDef.init {S : Signature} (F : FunctionDef S) : Valuation S → Valuation S
+  | .normal σ => .normal (σ.init F.parameters)
+  | .error => .error
+
+@[simp] theorem FunctionDef.init_error {S : Signature} (F : FunctionDef S) :
+    F.init .error = .error := rfl
+
 /-- Interpret the unspecified fixed-width arithmetic and comparison operators.
 
 This is a parameter, not an axiom: a concrete language supplies these functions,

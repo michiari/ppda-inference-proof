@@ -13,8 +13,7 @@ denotational_eq_operational (E : ExprInterpretation S) (P : Program S)
   Denotational.fragmentSemantics E P C σ = InferenceProof.fragmentSemantics E P C σ
 ```
 
-Both sides are the original semantic definitions. In particular, the right
-side is the sum over the original rationally labelled `Run` derivations.
+The right side is the sum over rationally labelled `Run` derivations.
 The result includes every source construct, mutual recursion, nested queries,
 nontermination, and the error valuation. No simulation, compositionality,
 termination bound, or fixed-point equation is assumed by the theorem.
@@ -39,7 +38,7 @@ assumption is needed.
 | --- | --- |
 | Main and appendix equivalence theorem | `denotational_eq_operational` in `Main.lean` |
 | Skip, observation, assignment, and probabilistic assignment | `sourceWP_skip`, `sourceWP_observe`, `sourceWP_assign`, `sourceWP_randomAssign`; matching `runtime_*` equations; structural cases of `auxiliarySemantics_le_runtime` |
-| Distinct random branches with coincident stores | Existing `Step`/`Run` multiplicities and `Branch` choices are preserved by `branchEdgeEquiv`; `sum_branches` sums them |
+| Random assignment, including equal outcomes | `Step.rndAssignLeft` and `Step.rndAssignRight` require distinct values; `Step.rndAssignEq` has probability one; `sourceWP_randomAssign_eq` proves the matching denotational identity |
 | Sequencing and delta expansion | `expect_bind`, `sourceWP_seq`, `codeWP_compile`, and the sequencing case of `auxiliarySemantics_le_runtime`; `operational_seq` exposes the resulting kernel equation |
 | Conditional, including error input | `sourceWP_ite`, `runtime_ite`, `operational_ite`, and `operational_error` |
 | Finite loop unfoldings | `expect_whileApproximation_succ`, `expect_whileApproximation_error`, and the finite-iterate induction in `auxiliarySemantics_le_runtime` |
@@ -47,56 +46,49 @@ assumption is needed.
 | Supremum of bounded loops | `semantics_while_eq_iSup_boundedWhile`, `operational_while_eq_iSup_boundedWhile`, and `operational_while_eq_iSup` |
 | Equations `eq:sem-k-func-asgmt`, `eq:sem-k-sq-asgmt` | Existing `functionAssign`/`sampleQueryAssign`, interpreted at `recursionApproximation E P k`; `sourceWP_call` and `sourceWP_sampleQuery` give their weighted sums |
 | Equations `eq:alphak`, `eq:betak` and induction on k | `sourceWP_call_succ`, `sourceWP_sampleQuery_succ`, `recursionApproximation_callsBelow` |
-| Call/return diagram and equation `eq:op-func` | `runtime_call`, `runtime_return`, `runtimeDenotation_return`, `runtimeDenotation_call`, and `operational_call` |
+| Call initialization, return diagram, and equation `eq:op-func` | `runtime_call`, `runtime_return`, `runtimeDenotation_return`, `runtimeDenotation_call`, and `operational_call` |
 | Query/rejection diagram | `runtime_sampleQuery`, `runtime_endQuery`, `runtime_error_query`, `runtimeDenotation_query`, and `operational_sampleQuery` |
 | Increasing supremum over call/query bounds | `sourceWP_recursiveEnvironment`, `semantics_le_runtime`, and `operational_eq_iSup_recursionApproximation` (specialize to calls or queries) |
 | All terminating runs have finite length | `boundedRunSum`, `terminationProbability_eq_iSup`, `terminationProbability_fixedPoint` |
-| Runtime equations compute the original operational semantics | `runtime_iterate_eq_bounded`, `runtimeValue_eq_terminationProbability` |
+| Runtime equations compute operational termination probabilities | `runtime_iterate_eq_bounded`, `runtimeValue_eq_terminationProbability` |
 | Every operational run contributes to the denotation | `configurationDenotation_prefixed`, `runtimeValue_le_denotation` |
 | Operational query normalization | `functionSemantics_eq_marginal_operational`, `operational_sampleQuery_eq_normalize` |
 
 The runtime comparison uses the already verified `PPDA.headMove` evaluator.
 `branchEdgeEquiv` identifies its enabled Boolean choices with actual operational
-rule instances. The existing finite-code/stack invariant `PPDA.InProgram` is
+rule instances. The finite-code/stack invariant `PPDA.InProgram` is
 proved for initial fragments and preserved by every operational step. Induction
 on run-length cutoffs therefore identifies the runtime Kleene supremum with
-the original operational run sum. This bridge retains zero-weight branches
-and aggregates coincident outcomes correctly.
+the operational run sum, including zero-weight transitions.
 
 The reverse comparison is proved structurally for every finite recursive
-environment. The call case enters the function body at the preceding bound;
+environment. The call case initializes the callee store and enters the body at the preceding bound;
 the query case uses the preceding alpha and beta, exactly as in `eq:betak`.
 Continuity in the environment removes the bound. The forward comparison uses
 the loop and recursion fixed-point equations to interpret saved frames as a
 pre-fixed point of the runtime operator. Leastness then accounts for every
 finite operational run.
 
-## Representation differences and corrections
+## Representation
 
-- The formalization carries call/query bounds in the environment instead of
-  adding bounded call constructors to `Stmt` and a second bounded pPDA. The
-  paper's informal run-inclusion diagrams are replaced by the two proved
-  comparisons above. This avoids assuming the diagrams' compositionality
-  claims, and proves the same unbounded equivalence theorem. Literal bounded
-  call syntax is not needed by this proof.
-- The appendix identifies the zero source unrolling (`diverge`) with the zero
-  operator. This fails on error input: every source statement propagates the
-  error valuation. In Lean, `semantics_diverge` proves the exact transformer
-  `errorPart`, and source unrollings are `Phi^[n] errorPart`. They lie between
-  `Phi^[n] 0` and `Phi^[n+1] 0`, so their supremum is the same least fixed point.
-  `BoundedLoops.lean` proves both the corrected identity and the supremum result.
-  A nonzero constant is supplied for `true` in these syntactic-sugar theorems;
-  the main equivalence theorem needs no such assumption.
-- Random-assignment probabilities are valid in the paper's language. The
-  existing Lean definitions additionally make invalid normal-store rows zero,
-  with no operational transitions. Equivalence covers this common extension,
-  so it needs no additional validity assumptions. Error input still propagates.
-- The paper's piecewise random-assignment explanation must sum both branches
-  when their updates coincide. Both original semantics do so, and the proof
-  preserves this behavior. No distinct-outcome hypothesis is introduced.
+Call/query bounds are carried in the environment. The structural induction
+works for every continuation and grounded stack; the runtime first-step equations
+and leastness justify the call and query diagrams.
 
-No original syntax or semantic definition body was changed. There are no
-placeholders or custom axioms.
+`FunctionDef.init` is shared by the operational call rule and the denotational
+embedding `φ_i`. It preserves parameter values and zeros all other variables;
+returns restore the caller's saved store. Equal random outcomes take a single
+probability-one operational transition, consistent with their combined mass in
+the denotational formula.
+
+As in the appendix, `semantics_diverge` gives `errorPart`, bounded source loops
+are `Phi^[n] errorPart`, and comparison with successive zero-seed iterates proves
+their supremum is the loop denotation. A nonzero constant supplies `true` in
+these syntactic-sugar theorems; the main theorem needs no such assumption.
+
+Invalid random-assignment rows are extended by zero on both sides. On the
+paper's validity domain the theorems apply directly to its semantic clauses.
+There are no placeholders or custom axioms.
 
 ## Files
 

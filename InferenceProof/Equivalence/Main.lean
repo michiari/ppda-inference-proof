@@ -7,9 +7,9 @@ set_option linter.style.header false
 
 /-! # Equivalence of denotational and operational semantics
 
-Section 6, Theorem `thm:equivalence`, and its appendix theorem. Both sides
-are the original definitions, including the original sum over rationally
-labelled operational runs. The statement has no simulation or fixed-point
+Section 6, Theorem `thm:equivalence`, and its appendix theorem. The theorem
+compares source denotations with the sum over rationally labelled operational
+runs. The statement has no simulation or fixed-point
 hypotheses, and applies to every source fragment and initial valuation.
 -/
 

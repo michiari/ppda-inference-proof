@@ -42,7 +42,7 @@ def IsSubdistribution {α : Type*} (p : Mass α) : Prop := totalMass p ≤ 1
 def Subdistribution (α : Type*) := {p : Mass α // IsSubdistribution p}
 
 open scoped Classical in
-/-- The point mass `δ_a`, also the paper's embedding `φ(a)`. -/
+/-- The point mass `δ_a`. -/
 def dirac {α : Type*} (a : α) : Mass α := fun b => if a = b then 1 else 0
 
 /-- Weighted composition of mass functions and kernels. -/
@@ -148,10 +148,10 @@ def sampleQueryAssign (x : Var S) (query : FunctionKernel S) : Transformer S :=
           query (.normal σ) (some value) * dirac (.normal (σ.update x value)) σ'
 
 /-- Recover the output kernel of a function from its body transformer
-(`Marg_out ∘ ⟦body⟧ ∘ φ`, equation `eq:sem-func`).
+(`Marg_out ∘ ⟦body⟧ ∘ φ_i`, equation `eq:sem-func`).
 -/
-def functionFromBody (out : Var S) (body : Transformer S) : FunctionKernel S :=
-  fun σ => marginal out (body (dirac σ))
+def functionFromBody (F : FunctionDef S) (body : Transformer S) : FunctionKernel S :=
+  fun σ => marginal F.out (body (dirac (F.init σ)))
 
 open scoped Classical in
 /-- The normalization `𝒩` of equation `eq:sem-sq`.
@@ -168,7 +168,7 @@ def normalize (q : OutputMass S) : OutputMass S :=
 
 /-- The illustrative nonrecursive query definition `𝒩 ∘ ⟦f⟧`.
 For recursive queries the definition is the β component of the joint supremum;
-its equality with this normalization is a later theorem, not an assumption.
+`sampleQuerySemantics_eq_normalize` proves equality with this normalization.
 -/
 def queryFromFunction (callee : FunctionKernel S) : FunctionKernel S :=
   fun σ => normalize (callee σ)
@@ -228,7 +228,7 @@ and β in the affine rejection equation, preserving the paper's iteration order.
 -/
 def recursionFunctional (E : ExprInterpretation S) (P : Program S)
     (env : Environment S) : Environment S :=
-  (fun f => functionFromBody (P.functions f).out
+  (fun f => functionFromBody (P.functions f)
       (auxiliarySemantics E env (P.functions f).body),
     fun f σ => rejectionFunctional (env.1 f σ) (env.2 f σ))
 

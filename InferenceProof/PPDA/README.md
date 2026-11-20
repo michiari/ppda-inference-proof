@@ -45,7 +45,7 @@ The generic polynomial and path-sum development consists of:
   `Automaton.terminationProbability_eq_sum_path` identifies the least polynomial
   solution with the sum of all terminating pPDA path weights.
 
-All three program-specific tasks previously listed here are now completed:
+The program translation consists of:
 
 1. `CodeClosure.lean` constructs a finite, continuation-closed set of runtime
    locations directly from the source and function bodies. `FiniteModel.lean`
@@ -65,10 +65,10 @@ All three program-specific tasks previously listed here are now completed:
    by summing enabled instances with the same target and replacement word.
    `Branching.lean` proves that aggregating such instances preserves path mass.
    `OperationalPaths.lean` and `OperationalWalk.lean` reindex the original `Run`
-   sum without losing accumulated labels or branch multiplicity.
+   sum while preserving accumulated labels.
    `Equivalence.lean` constructs the weight-preserving `programPathEquiv` and
-   proves `polynomialTermination_eq_operational`. Both random-assignment branches
-   contribute separately even when their probabilities and successors coincide.
+   proves `polynomialTermination_eq_operational`. Distinct random outcomes
+   have their Bernoulli weights; equal outcomes use one probability-one rule.
 
 There are two deliberate representation choices relative to the paper:
 

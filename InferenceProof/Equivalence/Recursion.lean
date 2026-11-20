@@ -44,7 +44,7 @@ theorem recursionApproximation_callsBelow (n : ℕ) :
       rw [sourceWP_call_succ, runtime_call E P o x f k σ G hg hn]
       apply le_trans _ (auxiliarySemantics_le_runtime E P o _ ih (P.functions f).body
         (.ret (P.functions f).out) (.function k x σ :: G) (.function hg hn)
-        (List.cons_ne_nil _ _) (.normal σ))
+        (List.cons_ne_nil _ _) ((P.functions f).init (.normal σ)))
       apply sourceWP_mono
       intro τ
       cases τ with

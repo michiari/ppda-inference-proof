@@ -57,6 +57,14 @@ theorem sourceWP_randomAssign (x : Var S) (a n d b : Expr S)
     rw [expect_add, expect_mul, expect_mul, expect_dirac, expect_dirac]
   · exact expect_zero r
 
+theorem sourceWP_randomAssign_eq (x : Var S) (a n d b : Expr S)
+    (r : Valuation S → ℝ≥0∞) (σ : Store S) (hv : ValidProbability E σ n d)
+    (he : a.eval E σ = b.eval E σ) :
+    sourceWP E env (.randomAssign x a n d b) r (.normal σ) =
+      r (.normal (σ.update x (a.eval E σ))) := by
+  rw [sourceWP_randomAssign, ite_eq_left hv, ← he, ← add_mul,
+    branchProbability_weights_sum E σ n d hv, one_mul]
+
 theorem sourceWP_call (x : Var S) (f : FunctionName S)
     (r : Valuation S → ℝ≥0∞) (σ : Store S) :
     sourceWP E env (.call x f) r (.normal σ) =
@@ -95,11 +103,12 @@ theorem sourceWP_call_succ (P : Program S) (n : ℕ) (x : Var S) (f : FunctionNa
     (r : Valuation S → ℝ≥0∞) (σ : Store S) :
     sourceWP E (recursionApproximation E P (n + 1)) (.call x f) r (.normal σ) =
       sourceWP E (recursionApproximation E P n) (P.functions f).body
-        (fun τ => outputReward x σ r (read (P.functions f).out τ)) (.normal σ) := by
+        (fun τ => outputReward x σ r (read (P.functions f).out τ))
+        ((P.functions f).init (.normal σ)) := by
   rw [sourceWP_call, recursionApproximation, Function.iterate_succ_apply']
   change expect (marginal (P.functions f).out
     (auxiliarySemantics E (recursionApproximation E P n) (P.functions f).body
-      (dirac (.normal σ)))) _ = _
+      (dirac ((P.functions f).init (.normal σ))))) _ = _
   rw [expect_marginal]
   rfl
 
@@ -122,12 +131,13 @@ theorem sourceWP_call_fixedPoint (P : Program S) (x : Var S) (f : FunctionName S
     (r : Valuation S → ℝ≥0∞) (σ : Store S) :
     sourceWP E (recursiveEnvironment E P) (.call x f) r (.normal σ) =
       sourceWP E (recursiveEnvironment E P) (P.functions f).body
-        (fun τ => outputReward x σ r (read (P.functions f).out τ)) (.normal σ) := by
+        (fun τ => outputReward x σ r (read (P.functions f).out τ))
+        ((P.functions f).init (.normal σ)) := by
   rw [sourceWP_call]
   conv_lhs => rw [← recursiveEnvironment_fixedPoint E P]
   change expect (marginal (P.functions f).out
     (auxiliarySemantics E (recursiveEnvironment E P) (P.functions f).body
-      (dirac (.normal σ)))) _ = _
+      (dirac ((P.functions f).init (.normal σ))))) _ = _
   rw [expect_marginal]
   rfl
 

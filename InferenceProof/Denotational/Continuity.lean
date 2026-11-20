@@ -73,11 +73,11 @@ theorem marginal_omegaContinuous (x : Var S) : ChainContinuous (marginal x) := b
   unfold ChainContinuous
   exact omegaContinuous_bind ChainContinuous.id ChainContinuous.const
 
-theorem functionFromBody_omegaContinuous (out : Var S) :
-    ChainContinuous (functionFromBody out) := by
+theorem functionFromBody_omegaContinuous (F : FunctionDef S) :
+    ChainContinuous (functionFromBody F) := by
   apply ChainContinuous.of_apply₂
   intro σ
-  exact (marginal_omegaContinuous out).comp (ChainContinuous.apply (dirac σ))
+  exact (marginal_omegaContinuous F.out).comp (ChainContinuous.apply (dirac (F.init σ)))
 
 theorem whileApproximation_omegaContinuous [CompleteLattice α]
     (E : ExprInterpretation S) (b : Expr S) {body : α → Transformer S}

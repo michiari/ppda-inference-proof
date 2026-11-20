@@ -86,7 +86,8 @@ theorem head_probability_zero_or_one (E : ExprInterpretation S) (P : Program S)
       | stmt s =>
         cases s with
         | randomAssign x a n d b =>
-          by_cases hv : ValidProbability E σ n d <;> simp [headMove, hv]
+          by_cases hv : ValidProbability E σ n d <;>
+            by_cases he : a.eval E σ = b.eval E σ <;> simp [headMove, single, hv, he]
         | ite b t e =>
           by_cases hg : (b.eval E σ).val = 0 <;> simp [headMove, single, hg]
         | «while» b body =>

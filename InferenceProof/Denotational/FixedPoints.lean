@@ -27,7 +27,7 @@ theorem recursionFunctional_omegaContinuous : ChainContinuous (recursionFunction
   apply ChainContinuous.prodMk
   · apply ChainContinuous.of_apply₂
     intro f
-    exact (functionFromBody_omegaContinuous (P.functions f).out).comp
+    exact (functionFromBody_omegaContinuous (P.functions f)).comp
       (auxiliarySemantics_omegaContinuous E (P.functions f).body)
   · apply ChainContinuous.of_apply₂
     intro f
@@ -63,8 +63,9 @@ theorem recursionFunctional_preserves {env : Environment S}
     IsSubprobabilityEnvironment (recursionFunctional E P env) := by
   constructor
   · intro f σ
-    exact (auxiliarySemantics_preserves E env h (P.functions f).body (dirac σ)
-      (isSubdistribution_dirac σ)).map (read (P.functions f).out)
+    exact (auxiliarySemantics_preserves E env h (P.functions f).body
+      (dirac ((P.functions f).init σ))
+      (isSubdistribution_dirac ((P.functions f).init σ))).map (read (P.functions f).out)
   · intro f σ
     exact rejectionFunctional_preserves (h.1 f σ) (h.2 f σ)
 

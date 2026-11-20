@@ -83,7 +83,7 @@ noncomputable def programEdgeWeight {c : ProgramControl P C} {X : ProgramSymbol 
     {r : ProgramControl P C} {w : Replacement (ProgramSymbol P C)}
     (edge : ProgramEdge E P C c X r w) : ℝ≥0∞ := ENNReal.ofReal (edge.1.move.probability : ℝ)
 
-/-- Decode a branch-labelled pPDA path into the original operational semantics. -/
+/-- Decode a branch-labelled pPDA path into operational rule derivations. -/
 noncomputable def decodePath {c : ProgramControl P C} {stack : List (ProgramSymbol P C)}
     {q : ProgramControl P C} (path : BranchPath (ProgramEdge E P C) c stack q)
     (hg : Grounded (stack.map Subtype.val)) :

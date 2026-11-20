@@ -171,7 +171,7 @@ theorem runtime_call (x : Var S) (f : FunctionName S) (k : Code S) (σ : Store S
     (G : List (StackSymbol S)) (hg : Grounded G) (hn : G ≠ []) :
     continuation E P o (compile (.call x f) k) G (.normal σ) =
       continuation E P o (compile (P.functions f).body (.ret (P.functions f).out))
-        (.function k x σ :: G) (.normal σ) := by
+        (.function k x σ :: G) ((P.functions f).init (.normal σ)) := by
   classical
   cases G with
   | nil => exact False.elim (hn rfl)
@@ -207,9 +207,15 @@ theorem runtime_randomAssign (x : Var S) (a n d b : Expr S) (k : Code S) (σ : S
   | nil => exact False.elim (hn rfl)
   | cons X tail =>
     rw [runtime_cons E P o _ _ X tail hg.boundary]
-    by_cases h : ValidProbability E σ n d <;>
-      simp [headMove, moveTarget, Replacement.word,
-        compile, Code.ofStmt, Code.append, h, add_comm]
+    by_cases hv : ValidProbability E σ n d
+    · by_cases he : a.eval E σ = b.eval E σ
+      · have hw := branchProbability_weights_sum E σ n d hv
+        simp only [Rat.cast_sub, Rat.cast_one] at hw
+        simp [headMove, single, moveTarget, Replacement.word, compile, Code.ofStmt,
+          Code.append, hv, he, ← add_mul, hw]
+      · simp [headMove, moveTarget, Replacement.word, compile, Code.ofStmt,
+          Code.append, hv, he, add_comm]
+    · simp [headMove, moveTarget, Replacement.word, compile, Code.ofStmt, Code.append, hv]
 
 end
 

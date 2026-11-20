@@ -77,6 +77,14 @@ theorem assign_preserves (E : ExprInterpretation S) (x : Var S) (e : Expr S) :
 theorem randomAssign_massLinear (E : ExprInterpretation S) (x : Var S)
     (a n d b : Expr S) : MassLinear (randomAssign E x a n d b) := massLinear_bind _
 
+theorem branchProbability_weights_sum (E : ExprInterpretation S) (σ : Store S)
+    (n d : Expr S) (h : ValidProbability E σ n d) :
+    ENNReal.ofReal (branchProbability E σ n d : ℝ) +
+      ENNReal.ofReal ((1 - branchProbability E σ n d : ℚ) : ℝ) = 1 := by
+  rw [← ENNReal.ofReal_add (Rat.cast_nonneg.mpr h.2.1)
+    (Rat.cast_nonneg.mpr (sub_nonneg.mpr h.2.2)), ← Rat.cast_add,
+    add_sub_cancel, Rat.cast_one, ENNReal.ofReal_one]
+
 theorem randomAssign_preserves (E : ExprInterpretation S) (x : Var S)
     (a n d b : Expr S) : PreservesSubdistributions (randomAssign E x a n d b) := by
   classical
@@ -91,9 +99,7 @@ theorem randomAssign_preserves (E : ExprInterpretation S) (x : Var S)
       change totalMass ((fun σ' => _ * dirac _ σ') + (fun σ' => _ * dirac _ σ')) ≤ 1
       rw [totalMass_add, totalMass_mul, totalMass_mul, totalMass_dirac, totalMass_dirac,
         mul_one, mul_one]
-      rw [← ENNReal.ofReal_add (Rat.cast_nonneg.mpr hv.2.1)
-        (Rat.cast_nonneg.mpr (sub_nonneg.mpr hv.2.2)), ← Rat.cast_add,
-        add_sub_cancel, Rat.cast_one, ENNReal.ofReal_one]
+      exact (branchProbability_weights_sum E σ n d hv).le
     · simp only [hv, ite_false]
       exact isSubdistribution_zero
 

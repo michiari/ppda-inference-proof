@@ -106,7 +106,7 @@ noncomputable instance (c : ProgramControl P C) (X : ProgramSymbol P C)
   exact inferInstanceAs (Fintype {edge : ProgramBranch E P C c X //
     branchTarget E P C edge = r ∧ branchReplacement E P C edge = w})
 
-/-- The exact rational transition coefficient, aggregating coincident rule instances. -/
+/-- The exact rational transition coefficient obtained from enabled rules. -/
 noncomputable def programTransition (c : ProgramControl P C) (X : ProgramSymbol P C)
     (r : ProgramControl P C) (w : Replacement (ProgramSymbol P C)) : ℚ :=
   ∑ edge : ProgramEdge E P C c X r w, edge.1.move.probability

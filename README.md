@@ -1,118 +1,53 @@
 # inference-proof
 
 Lean 4 formalization of *Exact Inference for Nested Discrete Probabilistic
-Programs*, whose sources are in `../paper`. Build with `lake build`; import
-`InferenceProof` to use the formalization. The pPDA polynomial termination
-semantics is proved equivalent to the operational termination probability for
-every source fragment and initial/final store. The denotational well-definedness
-and least-fixed-point results of Section 5 and Appendix A are proved, as is
-Section 6's equivalence of denotational and operational semantics.
-There are no proof placeholders.
+Programs*, with sources in `../paper`. Build with `lake build`; import
+`InferenceProof` to use the formalization.
 
-- `InferenceProof/Syntax.lean` defines finite variable, function, and value
-  domains; expressions; all source statements; function definitions; and programs
-  (Section 3, `paper/3-cprGCL.tex`). `Program.WellFormed` expresses that main is
-  `f₀` and has no parameters.
-- `InferenceProof/SemanticsCommon.lean` defines stores, error valuations,
-  expression interpretation and evaluation, and random-assignment probabilities.
-  Both semantics import this shared foundation independently.
-- `InferenceProof/OperationalSemantics.lean` defines runtime code, configurations,
-  and every rule in Figure `fig:op-semantics`
-  (Section 4, `paper/4-operational.tex`). It also defines transition weights,
-  positive-probability reachability, finite runs, and termination probabilities.
-- `InferenceProof/DenotationalSemantics.lean` defines the distribution transformers
-  of Section 5 (`paper/5-denotational.tex`) in the namespace
-  `InferenceProof.Denotational`: marginals, guard restriction, normalization,
-  all statement clauses, and the joint semantics of recursive calls and queries.
-- `InferenceProof/Denotational/` proves subdistribution closure, linearity,
-  increasing-chain continuity, existence and leastness of the while and joint
-  recursion fixed points, and equality of recursive query kernels with
-  normalization. See [the denotational proof map](InferenceProof/Denotational/README.md).
-- `InferenceProof/PPDA/` defines finite rational pPDAs and their quadratic
-  termination system, constructs the finite program automaton, and proves
-  `PPDA.polynomialTermination_eq_operational` and
-  `PPDA.ppdaTermination_eq_operational`. Reachable controls and stack symbols are
-  proved finite; coincident rule instances retain their probability mass.
-  See [the pPDA results and source correspondence](InferenceProof/PPDA/README.md).
+The development proves denotational well-definedness, the loop and simultaneous
+recursion least-fixed-point results, recursive query normalization, and equality
+of denotational semantics, operational termination probabilities, and the finite
+pPDA polynomial termination system. There are no proof placeholders or custom
+axioms.
 
-- `InferenceProof/Equivalence/` proves
-  `Equivalence.denotational_eq_operational` for every fragment and initial store,
-  including recursive calls and nested queries. It also proves equivalence
-  with the polynomial system, operational subdistribution bounds, composition
-  laws, and the bounded-loop supremum results.
-  See [the equivalence proof map](InferenceProof/Equivalence/README.md).
+| Module | Contents |
+| --- | --- |
+| `Syntax` | Finite variable, function, and value domains; expressions; statements; function definitions and programs |
+| `SemanticsCommon` | Stores, callee initialization `init_i`, expression evaluation, and rational branch probabilities |
+| `OperationalSemantics` | Runtime code, stack frames, small-step rules, finite runs, and termination probabilities |
+| `DenotationalSemantics` | Distribution transformers, marginals, guard restrictions, normalization, and Phi/Psi iterates |
+| [`Denotational`](InferenceProof/Denotational/README.md) | Closure, linearity, continuity, least fixed points, and query normalization (Section 5 and its appendix) |
+| [`PPDA`](InferenceProof/PPDA/README.md) | Finite automata, the quadratic termination system, and equivalence with operational runs (Sections 2 and 4) |
+| [`Equivalence`](InferenceProof/Equivalence/README.md) | Operational/denotational equivalence, composition laws, and bounded-loop suprema (Section 6 and its appendix) |
 
-Calls carry a target variable and function name. Their argument list is implicit:
-it is exactly the callee's `parameters` list, following the restriction in
-Section 3 and the explanation in Section 5. The final `return out` is supplied
-by the call rule, rather than included in the source body. As in Figure
-`fig:op-semantics`, calls enter with the current store, and returns restore the
-saved caller store with only the target variable updated. The initial store is
-zero; the call rule does not reset other locals.
+Calls implicitly pass the callee's designated parameter variables. `Store.init`
+preserves their values and sets every other callee variable to zero;
+`FunctionDef.init` also preserves the error valuation. The call rule saves the
+caller store. On return, only the target variable is updated in that saved store.
+The denotational function kernel uses the same initialization before evaluating
+the body and taking its output marginal.
 
-The paper does not specify a grammar or an overflow policy for arithmetic
-operators. `Signature` supplies unary and binary operator symbols;
+Random assignment has two weighted transitions when its evaluated outcomes are
+distinct, and one probability-one transition when they are equal (`rndAssignEq`).
+Probability expressions must have nonzero denominator and rational ratio in
+`[0,1]`. Invalid normal-store rows have no operational transitions and zero
+denotational mass; `ValidProbabilities` and `ValidProgramProbabilities` express
+the paper's validity domain.
+
+`Signature` supplies the unspecified unary and binary operator symbols;
 `ExprInterpretation` supplies their total interpretations on `Fin (M + 1)`.
-Guards use C-style truth values. Invalid random-assignment probabilities enable
-no transition: the denominator must be nonzero and the rational ratio in `[0,1]`.
-Bernoulli and uniform sampling are derived constructs, not additional primitives.
+Guards use C-style truth values. `Code.ofStmt` and `Code.append` normalize
+sequencing and supply the final `↓` continuation needed by calls, queries, and
+observations. Stack lists have their top at the head; the bottom marker is
+removed only on termination. The final `return out` is supplied by the call rule.
 
-`Code.ofStmt` and `Code.append` implement right-associative sequencing. The
-initial-fragment constructor adds a final `↓` continuation so even a standalone
-call, query, or observation has the sequenced form required by the rules. Runtime
-code should be built through these functions; a raw `Code.stmt (Stmt.seq ...)`
-does not have an operational rule. `return` and `endquery` are runtime markers.
-Stack lists have their top at the head; ordinary rules require nonempty stacks,
-and only `term` and `err` remove the bottom marker.
+Distributions are nonnegative mass functions into `ℝ≥0∞`. Total mass is proved
+at most one for semantic kernels; missing mass represents divergence. Error
+mass is retained separately, and query rejection retries from the saved caller
+store. Query normalization divides successful output mass by `1 - q(error)`,
+retaining divergence; certain rejection yields zero.
 
-`Step` and `Run` are indexed families in `Type`, preserving distinct derivations.
-In particular, when both branches of a random assignment coincide, even with
-equal probabilities, both contribute to `transitionWeight` and
-`terminationProbability`. Labels are exact rationals; sums take values in
-Mathlib's extended nonnegative reals. `Equivalence.operational_isSubdistribution`
-proves that each fragment's total termination mass is at most one. Divergent runs contribute no
-termination mass, and an always-rejected query keeps retrying.
-
-`initialProgram` and `programSemantics` follow Section 4.2's ordinary call to
-main. Section 3 instead describes sampling a query to main; `initialQuery`
-provides that entry separately. The two entry conventions are not assumed equal.
-
-The denotational definitions use the same ambient mass functions `α → ℝ≥0∞`
-as the operational termination probabilities. `IsSubdistribution` and the
-subtype `Subdistribution` express the bound on total mass. `LinOp` records
-preservation of subdistributions and linearity in the paper's delta-expansion
-formulation. The transformers are defined on ambient mass functions so their
-construction does not require any closure proofs at this stage.
-
-`whileFunctional` is the paper's Φ; `whileSemantics` is the pointwise supremum
-of `Φ^k(0)`. `recursionFunctional` is the joint Ψ on pairs of function families
-`(α, β)`; `recursiveEnvironment` is the pointwise supremum of `Ψ^k(0,0)`.
-Finite iterates are available as `whileApproximation` and
-`recursionApproximation`. The query component uses the old α and β in the
-rejection equation, rather than normalizing intermediate approximations.
-`normalize` separately defines the paper's 𝒩, including zero for an
-almost-surely rejected query. Its denominator is `1 - q(error)`, which retains
-divergence mass. The output domain is `Option (Value S)`, with `none` for error.
-
-`ValidProbabilities` and `ValidProgramProbabilities` record the paper's domain
-restriction on random assignments. On this domain the denotational clauses
-follow the paper; outside it, a random assignment's invalid normal-store row
-is extended to zero, matching the absence of operational transitions.
-`Denotational.programSemantics` uses the ordinary-call entry and
-`Denotational.queryProgramSemantics` uses the query entry.
-
-The well-definedness proofs follow Section 5 and the denotational section of
-`paper/appendix.tex`: subdistributions and linear operators are omega-cpos,
-increasing limits commute with the required sums and products, the auxiliary
-semantics is continuous in the recursive environment, and both fixed points
-are least and preserve subdistributions. `semantics_linOp` gives closure and
-linearity for every statement. `sampleQuerySemantics_eq_normalize` proves the
-normalization characterization, including zero for certain rejection.
-The proofs also cover the existing extension of invalid probability rows by zero.
-
-The equivalence proof follows structural induction and the paper's finite loop
-and simultaneous recursion approximants. Explicit continuation lemmas account
-for saved stores, returns, and query rejection. The proof map explains the
-replacement of informal run diagrams by first-step equations and leastness,
-and a correction to the appendix's zero bounded-loop case on error input.
-The original syntax and semantic definitions are unchanged.
+The ordinary-call entry in Section 4.2 is `initialProgram` and
+`Denotational.programSemantics`. The query entry described in Section 3 is
+`initialQuery` and `Denotational.queryProgramSemantics`. Both have equivalence
+theorems; they are not identified with each other.
