@@ -1,7 +1,8 @@
 # Exact Inference for Nested Discrete Probabilistic Programs
 
 Lean 4 formalization of *Exact Inference for Nested Discrete Probabilistic
-Programs*, accepted at
+Programs*, by Francesco Pontiggia, Francesca Randone, Ezio Bartocci and Michele Chiari,
+accepted at
 [POPL](https://popl27.sigplan.org/track/POPL-2027-popl-research-papers) 2027.
 
 Build with `lake build`; import `InferenceProof` to use the formalization.
